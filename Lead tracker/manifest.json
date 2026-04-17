@@ -1,0 +1,13 @@
+{
+
+    "manifest_version": 3,
+    "name": "Lead Tracker",
+    "version": "1.0",
+    "description": "A Chrome extension to track leads and save them to local storage.",
+    "permissions": ["storage"],
+    "action": {
+        "default_popup": "tracker.html",
+        "default_icon": "icon1.png"
+    }
+
+}
