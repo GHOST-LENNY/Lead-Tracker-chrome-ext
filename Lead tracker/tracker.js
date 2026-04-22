@@ -1,42 +1,56 @@
 const inputEl = document.getElementById("input-el");
 const inputBtn = document.getElementById("input-btn");
+const deleteAll = document.querySelector("#delete-btn");
+const tabBtn = document.querySelector("#tab-btn");
+const copyBtn = document.getElementById("copy-btn");
 const ulEl = document.querySelector("ul");
-let myLeads = [];
 
-inputBtn.addEventListener("click", function () {
-  myLeads.push(inputEl.value);
-  renderLead();
-  inputEl.value = "";
+// const leadsFromLocalStorage = JSON.parse(localStorage.getItem("myLeads"));
+
+// let myLeads = leadsFromLocalStorage || [];
+// render(myLeads);
+
+chrome.storage.local.get(["myLeads"], (result) => {
+  myLeads = result.myLeads || [];
+  render(myLeads);
 });
 
-function renderLead() {
-  let listItems = "<li><a href='" + inputEl.value + "' target='_blank'>" + inputEl.value + "</a></li>";
-  ulEl.innerHTML += listItems;
+tabBtn.addEventListener("click", () => {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const currentUrl = tabs[0].url;
+    myLeads.push(currentUrl);
+      chrome.storage.local.set({ myLeads: myLeads });
+    // localStorage.setItem("myLeads", JSON.stringify(myLeads));
+    render(myLeads);
+  });
+});
+
+inputBtn.addEventListener("click", function () {
+  if (!inputEl.value?.trim()) return;
+
+  myLeads.push(inputEl.value);
+  inputEl.value = "";
+
+  chrome.storage.local.set({ myLeads: myLeads });
+  // localStorage.setItem("myLeads", JSON.stringify(myLeads));
+
+  render(myLeads);
+});
+
+function render(leads) {
+  let listItems = "";
+  for (let i = 0; i < leads.length; i++) {
+    listItems += `<li><a href ="${leads[i]}" target= "_blank">${leads[i]}</a></li>`;
+  }
+
+  ulEl.innerHTML = listItems;
 }
-// inputBtn.addEventListener("click", saveLead);
 
-// function saveLead() {
-// //   let lead = inputEl.value;
-//   let listItems = "";
-// //   console.log("mylead:" + lead);
+function deleteBtn() {
+  // localStorage.clear();
+  chrome.storage.local.remove("myLeads");
+  myLeads = [];
+  ulEl.innerHTML = "";
+}
 
-// //   myLeads.push(lead);
-//   myLeads.push(inputEl.value);
-//   inputEl.value = "";
-//   console.log("mylead:" + inputEl.value);
-
-//   for (i = 0; i < myLeads.length; i++) {
-//     console.log(myLeads[i]);
-//     listItems += `<li> ${myLeads[i]} </li>`;
-
-//     // inputEl.value = "";
-
-//     // let li = document.createElement("li");
-//     // li.textContent = myLeads[i];
-//     // ulEl.append(li);
-//   }
-
-//   ulEl.innerHTML = listItems;
-// //   lead = "";
-// }
-   
+deleteAll.addEventListener("dblclick", deleteBtn);
